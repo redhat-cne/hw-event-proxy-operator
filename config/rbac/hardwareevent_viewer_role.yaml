@@ -1,0 +1,20 @@
+# permissions for end users to view hardwareevents.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hardwareevent-viewer-role
+rules:
+- apiGroups:
+  - event.redhat-cne.org
+  resources:
+  - hardwareevents
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - event.redhat-cne.org
+  resources:
+  - hardwareevents/status
+  verbs:
+  - get

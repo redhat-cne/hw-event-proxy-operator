@@ -1,0 +1,24 @@
+# permissions for end users to edit hardwareevents.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hardwareevent-editor-role
+rules:
+- apiGroups:
+  - event.redhat-cne.org
+  resources:
+  - hardwareevents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - event.redhat-cne.org
+  resources:
+  - hardwareevents/status
+  verbs:
+  - get

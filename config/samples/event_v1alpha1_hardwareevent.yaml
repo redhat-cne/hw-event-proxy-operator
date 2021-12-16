@@ -1,0 +1,6 @@
+apiVersion: event.redhat-cne.org/v1alpha1
+kind: HardwareEvent
+metadata:
+  name: hardwareevent-sample
+spec:
+  # Add fields here
