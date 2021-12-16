@@ -1,27 +1,16 @@
 # Build the manager binary
-FROM golang:1.16 as builder
-
-WORKDIR /workspace
-# Copy the Go Modules manifests
-COPY go.mod go.mod
-COPY go.sum go.sum
-# cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-RUN go mod download
-
-# Copy the go source
-COPY main.go main.go
-COPY api/ api/
-COPY controllers/ controllers/
-
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.10 AS builder
+WORKDIR /go/src/github.com/redhat-cne/hw-event-proxy-operator
+COPY . .
+ENV GO111MODULE=off
+RUN make
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM registry.ci.openshift.org/ocp/4.10:base
 WORKDIR /
-COPY --from=builder /workspace/manager .
+COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/build/_output/bin/hw-event-proxy-operator /
+COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bundle/manifests /manifests
+COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bindata /bindata
 USER 65532:65532
 
-ENTRYPOINT ["/manager"]
+ENTRYPOINT ["/hw-event-proxy-operator"]

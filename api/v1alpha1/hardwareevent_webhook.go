@@ -17,16 +17,24 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
 
 // log is for logging in this package.
 var hardwareeventlog = logf.Log.WithName("hardwareevent-resource")
+var webhookClient client.Client
 
 func (r *HardwareEvent) SetupWebhookWithManager(mgr ctrl.Manager) error {
+
+	if webhookClient == nil {
+		webhookClient = mgr.GetClient()
+	}
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(r).
 		Complete()
@@ -35,15 +43,28 @@ func (r *HardwareEvent) SetupWebhookWithManager(mgr ctrl.Manager) error {
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-event-redhat-cne-org-v1alpha1-hardwareevent,mutating=false,failurePolicy=fail,sideEffects=None,groups=event.redhat-cne.org,resources=hardwareevents,verbs=create;update,versions=v1alpha1,name=vhardwareevent.kb.io,admissionReviewVersions=v1
+// +kubebuilder:webhook:path=/validate-event-redhat-cne-org-v1alpha1-hardwareevent,mutating=false,failurePolicy=fail,sideEffects=None,groups=event.redhat-cne.org,resources=hardwareevents,verbs=create;update,versions=v1alpha1,name=vhardwareevent.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &HardwareEvent{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *HardwareEvent) ValidateCreate() error {
 	hardwareeventlog.Info("validate create", "name", r.Name)
+	hwEventList := &HardwareEventList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(r.Namespace),
+	}
+	err := webhookClient.List(context.TODO(), hwEventList, listOpts...)
+	if err != nil {
+		return err
+	}
+	if len(hwEventList.Items) >= 1 {
+		return fmt.Errorf("only one Hardware Event instance is supported at this time")
+	}
 
-	// TODO(user): fill in your validation logic upon object creation.
+	if r.Spec.TransportHost == "" {
+		return fmt.Errorf("transport URL is required field in Hardware instance spec")
+	}
 	return nil
 }
 
@@ -51,7 +72,9 @@ func (r *HardwareEvent) ValidateCreate() error {
 func (r *HardwareEvent) ValidateUpdate(old runtime.Object) error {
 	hardwareeventlog.Info("validate update", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object update.
+	if r.Spec.TransportHost == "" {
+		return fmt.Errorf("transport URL is required field in Hardware instance spec")
+	}
 	return nil
 }
 
