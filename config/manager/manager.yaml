@@ -19,6 +19,9 @@ spec:
   replicas: 1
   template:
     metadata:
+      annotations:
+        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
+        service.beta.openshift.io/serving-cert-secret-name: webhook-server-cert
       labels:
         control-plane: controller-manager
     spec:
@@ -26,11 +29,12 @@ spec:
         runAsNonRoot: true
       containers:
       - command:
-        - /manager
+        - /hw-event-proxy-operator
         args:
         - --leader-elect
-        image: controller:latest
+        image: controller
         name: manager
+        imagePullPolicy: Always
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
@@ -52,5 +56,20 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        env:
+          - name: WATCH_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: OPERATOR_NAME
+            value: $OPERATOR_NAME
+          - name: RELEASE_VERSION
+            value: $RELEASE_VERSION
+          - name: HW_EVENT_PROXY_IMAGE
+            value: $HW_EVENT_PROXY_IMAGE
+          - name: KUBE_RBAC_PROXY_IMAGE
+            value: $KUBE_RBAC_PROXY_IMAGE
+          - name: CLOUD_EVENT_PROXY_IMAGE
+            value: $CLOUD_EVENT_PROXY_IMAGE
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10

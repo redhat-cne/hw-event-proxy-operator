@@ -27,15 +27,21 @@ import (
 type HardwareEventSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of HardwareEvent. Edit hardwareevent_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+	TransportHost string `json:"transportHost"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=debug
+	LogLevel string `json:"logLevel,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default=10
+	MsgParserTimeout int `json:"msgParserTimeout,omitempty"`
 }
 
 // HardwareEventStatus defines the observed state of HardwareEvent
 type HardwareEventStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	LastSynced *metav1.Time `json:"lastSyncTimestamp,omitempty"`
 }
 
 //+kubebuilder:object:root=true

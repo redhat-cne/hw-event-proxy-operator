@@ -36,7 +36,9 @@ IMAGE_TAG_BASE ?= redhat-cne.org/hw-event-proxy-operator
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+
+IMG ?= quay.io/redhat-cne/hw-event-proxy-operator:$(VERSION)
+
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.22
 
@@ -53,7 +55,8 @@ endif
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-all: build
+
+all: bin
 
 ##@ General
 
@@ -102,6 +105,17 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
+
+.PHONY: bin
+bin:
+	hack/build.sh
+
+image:
+	docker build -t redhat-cne.org/hw-event-proxy-operator -f Dockerfile .
+
+clean:
+	rm -rf build/_output/bin/hw-event-proxy-operator
+
 ##@ Deployment
 
 install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
@@ -146,7 +160,7 @@ endef
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
-	operator-sdk generate kustomize manifests -q
+	operator-sdk generate kustomize manifests -q --interactive=false -q
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
@@ -199,3 +213,9 @@ catalog-build: opm ## Build a catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
+
+
+# find or download controller-gen
+# download controller-gen if necessary
+operator-sdk:
+	go install ./vendor/github.com/operator-framework/operator-sdk/cmd/operator-sdk
