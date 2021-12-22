@@ -241,7 +241,7 @@ spec:
                 - name: KUBE_RBAC_PROXY_IMAGE
                   value: quay.io/openshift/origin-kube-rbac-proxy:4.10
                 - name: CLOUD_EVENT_PROXY_IMAGE
-                  value: quay.io/openshift/origin-cloud-event-proxy:4.10
+                  value: quay.io/redhat-cne/cloud-event-proxy:4.10
                 - name: WATCH_NAMESPACE
                   valueFrom:
                     fieldRef:
