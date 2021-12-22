@@ -9,7 +9,6 @@ RUN make
 FROM registry.ci.openshift.org/ocp/4.10:base
 WORKDIR /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/build/_output/bin/hw-event-proxy-operator /
-COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bundle/manifests /manifests
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bindata /bindata
 USER 65532:65532
 
