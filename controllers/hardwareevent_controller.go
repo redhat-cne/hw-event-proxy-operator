@@ -21,6 +21,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/go-logr/logr"
 	hwEventV1alpha1 "github.com/redhat-cne/hw-event-proxy-operator/api/v1alpha1"
 	"github.com/redhat-cne/hw-event-proxy-operator/pkg/apply"
@@ -34,13 +38,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"os"
-	"path/filepath"
+	kscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"time"
 )
 
 // HardwareEventReconciler reconciles a HardwareEvent object
@@ -57,8 +59,8 @@ type HardwareEventReconciler struct {
 //+kubebuilder:rbac:groups=event.redhat-cne.org,resources=hardwareevents/finalizers,verbs=update
 //+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;update;patch;create
 //+kubebuilder:rbac:groups=route.openshift.io,resources=routes,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=*,resources=services,verbs=get;list;watch;create;delete
-//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;delete
+//+kubebuilder:rbac:groups=*,resources=services,verbs=get;list;watch;create;delete;update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;delete;update
 //+kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;list;watch;create;delete;update
 //+kubebuilder:rbac:groups=authorization.k8s.io,resources=subjectaccessreviews,verbs=create;delete;get;watch;list;update
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=create;delete;get;watch;list;update
@@ -102,26 +104,11 @@ func (r *HardwareEventReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	}
 
-	// check if deployment is found
-	deps := appsv1.Deployment{}
-	err = r.Get(ctx, req.NamespacedName, &deps)
-
-	if err != nil {
-		if errors.IsNotFound(err) {
-			// Request object not found, could have been deleted after reconcile request.
-			// Owned objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers. Return and don't requeue.
-			if err = r.syncHwEventProxy(ctx, req.Namespace, instance); err != nil {
-				reqLogger.Error(err, "failed to sync hardware event proxy deployment ")
-				return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
-			}
-
-			return ctrl.Result{}, nil
-		}
-		// Error reading the object - requeue the request.
-		reqLogger.Error(err, "error reading the deployment")
-		return ctrl.Result{}, err
+	if err = r.syncHwEventProxy(ctx, req.Namespace, instance); err != nil {
+		reqLogger.Error(err, "failed to sync hardware event proxy deployment ")
+		return reconcile.Result{RequeueAfter: 30 * time.Second}, nil
 	}
+
 	instance.Status.LastSynced = &v1.Time{Time: time.Now()}
 	return ctrl.Result{}, nil
 }
@@ -139,7 +126,11 @@ func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespac
 	if instance.Spec.LogLevel == "" {
 		data.Data["LogLevel"] = "debug"
 	}
-	data.Data["MsgParserTimeOut"] = "10"
+	if instance.Spec.MsgParserTimeout <= 0 {
+		data.Data["MsgParserTimeOut"] = 10
+	} else {
+		data.Data["MsgParserTimeOut"] = instance.Spec.MsgParserTimeout
+	}
 	data.Data["ReleaseVersion"] = os.Getenv("RELEASE_VERSION")
 	data.Data["KubeRbacProxy"] = os.Getenv("KUBE_RBAC_PROXY_IMAGE")
 	data.Data["SideCar"] = os.Getenv("CLOUD_EVENT_PROXY_IMAGE")
@@ -151,6 +142,9 @@ func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespac
 	}
 
 	for _, obj := range objs {
+		if obj, err = r.setNodeSelector(instance, obj); err != nil {
+			return fmt.Errorf("failed to apply %s object %v with node selector err: %v", obj.GetName(), obj, err)
+		}
 		if err = apply.ApplyObject(ctx, r.Client, obj); err != nil {
 			return fmt.Errorf("failed to apply %s object %v with err: %v", obj.GetName(), obj, err)
 		}
@@ -182,6 +176,28 @@ func (r *HardwareEventReconciler) getSecret(secretName string, secretNamespace s
 		return nil, "", fmt.Errorf("error calculating configuration hash: %v", err)
 	}
 	return secret, secretHash, nil
+}
+
+// setNodeSelector synchronizes  deployment
+func (r *HardwareEventReconciler) setNodeSelector(
+	defaultCfg *hwEventV1alpha1.HardwareEvent,
+	obj *uns.Unstructured,
+) (*uns.Unstructured, error) {
+	var err error
+	if obj.GetKind() == "Deployment" && defaultCfg.Spec.NodeSelector != nil && len(defaultCfg.Spec.NodeSelector) > 0 {
+		scheme := kscheme.Scheme
+		deps := &appsv1.Deployment{}
+		err = scheme.Convert(obj, deps, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert obj hw-event-proxy to appsv1.Deployment: %v", err)
+		}
+		deps.Spec.Template.Spec.NodeSelector = defaultCfg.Spec.NodeSelector
+		err = scheme.Convert(deps, obj, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert appsv1.Deployment to hw-event-proxy obj: %v", err)
+		}
+	}
+	return obj, nil
 }
 
 // ObjectHash creates a deep object hash and return it as a safe encoded string

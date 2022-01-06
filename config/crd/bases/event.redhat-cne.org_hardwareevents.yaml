@@ -42,12 +42,17 @@ spec:
               msgParserTimeout:
                 default: 10
                 type: integer
+              nodeSelector:
+                additionalProperties:
+                  type: string
+                type: object
               transportHost:
                 description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file
                   TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"'
                 type: string
             required:
+            - nodeSelector
             - transportHost
             type: object
           status:

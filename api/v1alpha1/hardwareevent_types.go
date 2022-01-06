@@ -35,6 +35,9 @@ type HardwareEventSpec struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=10
 	MsgParserTimeout int `json:"msgParserTimeout,omitempty"`
+
+	// +kubebuilder:validation:Required
+	NodeSelector map[string]string `json:"nodeSelector"`
 }
 
 // HardwareEventStatus defines the observed state of HardwareEvent

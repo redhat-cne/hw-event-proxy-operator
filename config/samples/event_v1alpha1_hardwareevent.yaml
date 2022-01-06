@@ -3,4 +3,5 @@ kind: HardwareEvent
 metadata:
   name: hardwareevent-sample
 spec:
+  nodeSelector: {}
   transportHost: "amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
