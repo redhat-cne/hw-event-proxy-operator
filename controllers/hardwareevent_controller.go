@@ -145,11 +145,11 @@ func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespac
 		if obj, err = r.setNodeSelector(instance, obj); err != nil {
 			return fmt.Errorf("failed to apply %s object %v with node selector err: %v", obj.GetName(), obj, err)
 		}
-		if err = apply.ApplyObject(ctx, r.Client, obj); err != nil {
-			return fmt.Errorf("failed to apply %s object %v with err: %v", obj.GetName(), obj, err)
-		}
 		if err = controllerutil.SetControllerReference(instance, obj, r.Scheme); err != nil {
 			return fmt.Errorf("failed to set owner reference: %v", err)
+		}
+		if err = apply.ApplyObject(ctx, r.Client, obj); err != nil {
+			return fmt.Errorf("failed to apply %s object %v with err: %v", obj.GetName(), obj, err)
 		}
 	}
 
