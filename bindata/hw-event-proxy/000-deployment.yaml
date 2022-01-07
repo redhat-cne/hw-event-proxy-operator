@@ -43,7 +43,7 @@ spec:
             - name: MSG_PARSER_PORT
               value: "9097"
             - name: MSG_PARSER_TIMEOUT
-              value: "10"
+              value: "{{ .MsgParserTimeOut }}"
             - name: REDFISH_USERNAME
               valueFrom:
                 secretKeyRef:

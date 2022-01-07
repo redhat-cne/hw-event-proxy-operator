@@ -5,14 +5,14 @@ go 1.17
 require (
 	github.com/Masterminds/sprig v2.22.0+incompatible
 	github.com/go-logr/logr v0.4.0
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
 	github.com/pkg/errors v0.9.1
 	k8s.io/api v0.22.2
 	k8s.io/apimachinery v0.22.2
-	k8s.io/client-go v0.22.1
+	k8s.io/client-go v0.22.2
 	sigs.k8s.io/controller-runtime v0.10.0
+
 )
 
 require (
