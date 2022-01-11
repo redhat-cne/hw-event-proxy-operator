@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+
+commands:
+  - command: oc delete -f ../../../../config/samples/event_v1alpha1_hardwareevent.yaml
+    namespaced: true
+  - command: oc delete -f ../../manifest/secret.yaml
+    namespaced: true

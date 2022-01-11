@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+
+commands:
+  # deploy hw-event-proxy
+  - command: oc apply -f ../../../../config/samples/event_v1alpha1_hardwareevent.yaml
+    namespaced: true

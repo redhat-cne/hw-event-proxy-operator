@@ -214,8 +214,7 @@ catalog-build: opm ## Build a catalog image.
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
+kuttl-test:
+	kubectl-kuttl test
 
-# find or download controller-gen
-# download controller-gen if necessary
-operator-sdk:
-	go install ./vendor/github.com/operator-framework/operator-sdk/cmd/operator-sdk
+test-ci: deploy kuttl-test undeploy

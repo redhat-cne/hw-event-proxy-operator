@@ -1,0 +1,7 @@
+# Check to make sure deployment of manager is successful
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-event-proxy-operator-controller-manager
+status:
+  readyReplicas: 1
