@@ -1,0 +1,5 @@
+# The hw-event-proxy should not be deployed if Redfish secret is not present
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-event-proxy
