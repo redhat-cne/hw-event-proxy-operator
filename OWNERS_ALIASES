@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  hw-event-proxy-operator-reviewers:
+    - jzding
+    - aneeshkp
+    - nishant-parekh
+  hw-event-proxy-operator-approvers:
+    - aneeshkp
+    - jzding
