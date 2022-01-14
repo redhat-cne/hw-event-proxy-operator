@@ -217,7 +217,7 @@ catalog-push: ## Push a catalog image.
 e2e-deps:
 	hack/install-integration-tests-deps.sh
 
-kuttl-test: e2e-deps
+kuttl-test:
 	kubectl-kuttl test
 
-test-ci: deploy kuttl-test undeploy
+test-ci: e2e-deps deploy kuttl-test undeploy
