@@ -214,7 +214,10 @@ catalog-build: opm ## Build a catalog image.
 catalog-push: ## Push a catalog image.
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
 
-kuttl-test:
+e2e-deps:
+	hack/install-integration-tests-deps.sh
+
+kuttl-test: e2e-deps
 	kubectl-kuttl test
 
 test-ci: deploy kuttl-test undeploy
