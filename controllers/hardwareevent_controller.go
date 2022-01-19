@@ -110,6 +110,9 @@ func (r *HardwareEventReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	}
 
 	instance.Status.LastSynced = &v1.Time{Time: time.Now()}
+	if err := r.Status().Update(ctx, instance); err != nil {
+		return ctrl.Result{}, nil
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -160,6 +163,7 @@ func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespac
 func (r *HardwareEventReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&hwEventV1alpha1.HardwareEvent{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
 
