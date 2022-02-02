@@ -1,0 +1,10 @@
+# The hw-event-proxy and Redfish secret should be cleaned up
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-event-proxy
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redfish-basic-auth
