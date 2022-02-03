@@ -1,4 +1,4 @@
-# Verify hw-event-proxy is deployed successfully after Redfish secret was created
+# Verify hw-event-proxy is redeployed
 apiVersion: apps/v1
 kind: Deployment
 metadata:
