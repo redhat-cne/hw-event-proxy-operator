@@ -6,9 +6,8 @@
 - [Quick Start](#quick-start)
 
 ## HW-Event-Proxy Operator
-hw-event-proxy operator, runs in single namespace, 
-manages baremetal hardware event framework. 
-It offers `HardwareEvent` CRDs and deploys  `hw-event-proxy` container along with `cloud-event-proxy` cloud event framework.
+hw-event-proxy operator, runs in single namespace, manages baremetal hardware event framework.
+It offers `HardwareEvent` CRDs and deploys `hw-event-proxy` container along with `cloud-event-proxy` cloud event framework.
 
 
 ## HardwareEvent
@@ -43,8 +42,6 @@ stringData:
   hostaddr: 10.46.61.142
 ```
 
-
-
 Below is an example of updating `nodeSelector` to select a specific nodes:
 
 ```
@@ -59,6 +56,8 @@ spec:
 ```
 
 ## Quick Start
+
+Configure images used by the operator in [config/manager/env.yaml](config/manager/env.yaml).
 
 To install hw-event-proxy Operator:
 ```
