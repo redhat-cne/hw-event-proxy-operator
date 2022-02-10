@@ -11,7 +11,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: quay.io/redhat-cne/hw-event-proxy-operator
-  newTag: 0.0.1
+  newName: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator
+  newTag: 4.10.0
 patchesStrategicMerge:
 - env.yaml

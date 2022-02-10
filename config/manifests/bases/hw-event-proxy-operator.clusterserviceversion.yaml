@@ -18,8 +18,8 @@ metadata:
     capabilities: Basic Install
     categories: Event
     certified: "false"
-    containerImage: quay.io/redhat-cne/hw-event-proxy:4.10
-    createdAt: "2021-12-20"
+    containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.10
+    createdAt: "2022-02-15"
     description: This software manages the lifecycle of the hw-event-proxy container.
     olm.skipRange: '>=4.3.0-0 <4.10.0'
     provider: Red Hat
