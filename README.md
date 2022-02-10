@@ -57,10 +57,9 @@ spec:
 
 ## Quick Start
 
-Configure images used by the operator in [config/manager/env.yaml](config/manager/env.yaml).
-
 To install hw-event-proxy Operator:
 ```
+export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.11
 $ make deploy
 ```
 
@@ -68,3 +67,4 @@ To un-install:
 ```
 $ make undeploy
 ```
+Refer to [Developer Guide](docs/development.md) for more details.

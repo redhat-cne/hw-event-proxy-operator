@@ -14,8 +14,6 @@ spec:
       app: hw-event-proxy
   template:
     metadata:
-      annotations:
-        target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
       labels:
         app: hw-event-proxy
     spec:
