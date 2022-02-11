@@ -19,16 +19,16 @@ metadata:
     capabilities: Basic Install
     categories: Event
     certified: "false"
-    containerImage: quay.io/redhat-cne/hw-event-proxy:4.10
-    createdAt: "2021-12-20"
+    containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.11
+    createdAt: "2022-01-20"
     description: This software manages the lifecycle of the hw-event-proxy container.
-    olm.skipRange: '>=4.3.0-0 <4.10.0'
+    olm.skipRange: '>=4.3.0-0 <4.11.0'
     operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
     support: Red Hat
-  name: hw-event-proxy-operator.v0.0.1
+  name: hw-event-proxy-operator.v4.11.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -221,7 +221,6 @@ spec:
             metadata:
               annotations:
                 service.beta.openshift.io/serving-cert-secret-name: webhook-server-cert
-                target.workload.openshift.io/management: '{"effect": "PreferredDuringScheduling"}'
               labels:
                 control-plane: controller-manager
             spec:
@@ -250,16 +249,16 @@ spec:
                 - name: RELEASE_VERSION
                   value: v0.0.1
                 - name: HW_EVENT_PROXY_IMAGE
-                  value: quay.io/redhat-cne/hw-event-proxy:4.10
+                  value: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.11
                 - name: KUBE_RBAC_PROXY_IMAGE
-                  value: quay.io/openshift/origin-kube-rbac-proxy:4.10
+                  value: quay.io/openshift/origin-kube-rbac-proxy:4.11
                 - name: CLOUD_EVENT_PROXY_IMAGE
-                  value: quay.io/redhat-cne/cloud-event-proxy:4.10
+                  value: quay.io/openshift/origin-cloud-event-proxy:4.11
                 - name: WATCH_NAMESPACE
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/redhat-cne/hw-event-proxy-operator:0.0.1
+                image: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.11.0
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -354,7 +353,7 @@ spec:
   maturity: alpha
   provider:
     name: Red Hat Inc
-  version: 0.0.1
+  version: 4.11.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1
