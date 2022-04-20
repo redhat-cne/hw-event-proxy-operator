@@ -16,7 +16,7 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    categories: Event
+    categories: Monitoring
     certified: "false"
     containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.11
     createdAt: "2022-01-20"
