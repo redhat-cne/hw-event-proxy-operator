@@ -23,7 +23,7 @@ metadata:
     createdAt: "2022-01-20"
     description: This software manages the lifecycle of the hw-event-proxy container.
     olm.skipRange: '>=4.3.0-0 <4.11.0'
-    operators.operatorframework.io/builder: operator-sdk-v1.15.0+git
+    operators.operatorframework.io/builder: operator-sdk-v1.19.1
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
@@ -38,6 +38,35 @@ spec:
       displayName: Hardware Event
       kind: HardwareEvent
       name: hardwareevents.event.redhat-cne.org
+      resources:
+      - kind: Deployment
+        name: ""
+        version: apps/v1
+      - kind: Namespace
+        name: ""
+        version: v1
+      specDescriptors:
+      - displayName: Log Level
+        path: logLevel
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - displayName: Message Parser Timeout
+        path: msgParserTimeout
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - displayName: Node Selector
+        path: nodeSelector
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - description: TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+        displayName: Transport Host
+        path: transportHost
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      statusDescriptors:
+      - description: LastSynced time of the custom resource
+        displayName: Last Synced
+        path: lastSyncTimestamp
       version: v1alpha1
   description: |
     ## Funtionality
@@ -210,7 +239,9 @@ spec:
           - watch
         serviceAccountName: hw-event-proxy-operator-controller-manager
       deployments:
-      - name: hw-event-proxy-operator-controller-manager
+      - label:
+          control-plane: controller-manager
+        name: hw-event-proxy-operator-controller-manager
         spec:
           replicas: 1
           selector:
