@@ -45,9 +45,7 @@ spec:
                   type: string
                 type: object
               transportHost:
-                description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-                  Important: Run "make" to regenerate code after modifying this file
-                  TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"'
+                description: TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
                 type: string
             required:
             - nodeSelector
@@ -57,9 +55,7 @@ spec:
             description: HardwareEventStatus defines the observed state of HardwareEvent
             properties:
               lastSyncTimestamp:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file LastSynced time of the custom resource'
+                description: LastSynced time of the custom resource
                 format: date-time
                 type: string
             type: object

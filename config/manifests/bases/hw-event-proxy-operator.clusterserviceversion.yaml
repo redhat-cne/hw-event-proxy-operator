@@ -55,17 +55,13 @@ spec:
         path: nodeSelector
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
-      - description: 'INSERT ADDITIONAL SPEC FIELDS - desired state of cluster Important:
-          Run "make" to regenerate code after modifying this file TransportHost is
-          amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"'
+      - description: TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
         displayName: Transport Host
         path: transportHost
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
       statusDescriptors:
-      - description: 'INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-          Important: Run "make" to regenerate code after modifying this file LastSynced
-          time of the custom resource'
+      - description: LastSynced time of the custom resource
         displayName: Last Synced
         path: lastSyncTimestamp
       version: v1alpha1

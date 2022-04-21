@@ -27,6 +27,7 @@ import (
 type HardwareEventSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+
 	// TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Transport Host",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	TransportHost string `json:"transportHost"`
@@ -48,6 +49,7 @@ type HardwareEventSpec struct {
 type HardwareEventStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	
 	// LastSynced time of the custom resource
 	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Last Synced"
 	LastSynced *metav1.Time `json:"lastSyncTimestamp,omitempty"`
