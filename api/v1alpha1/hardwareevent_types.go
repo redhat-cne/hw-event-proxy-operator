@@ -28,15 +28,19 @@ type HardwareEventSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Transport Host",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	TransportHost string `json:"transportHost"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=debug
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Log Level",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	LogLevel string `json:"logLevel,omitempty"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=10
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Message Parser Timeout",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	MsgParserTimeout int `json:"msgParserTimeout,omitempty"`
 
 	// +kubebuilder:validation:Required
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	NodeSelector map[string]string `json:"nodeSelector"`
 }
 
@@ -44,6 +48,7 @@ type HardwareEventSpec struct {
 type HardwareEventStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Last Synced"
 	LastSynced *metav1.Time `json:"lastSyncTimestamp,omitempty"`
 }
 
@@ -51,6 +56,8 @@ type HardwareEventStatus struct {
 //+kubebuilder:subresource:status
 
 // HardwareEvent is the Schema for the hardwareevents API
+
+//+operator-sdk:csv:customresourcedefinitions:displayName="Hardware Event",resources={{Namespace, v1},{Deployment,apps/v1}}
 type HardwareEvent struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
