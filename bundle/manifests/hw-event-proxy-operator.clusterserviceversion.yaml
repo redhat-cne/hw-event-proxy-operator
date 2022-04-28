@@ -23,7 +23,7 @@ metadata:
     createdAt: "2022-01-20"
     description: This software manages the lifecycle of the hw-event-proxy container.
     olm.skipRange: '>=4.3.0-0 <4.11.0'
-    operators.operatorframework.io/builder: operator-sdk-v1.19.1
+    operators.operatorframework.io/builder: operator-sdk-v1.16.0-ocp
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
@@ -240,9 +240,7 @@ spec:
           - watch
         serviceAccountName: hw-event-proxy-operator-controller-manager
       deployments:
-      - label:
-          control-plane: controller-manager
-        name: hw-event-proxy-operator-controller-manager
+      - name: hw-event-proxy-operator-controller-manager
         spec:
           replicas: 1
           selector:
