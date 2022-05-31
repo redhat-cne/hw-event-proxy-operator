@@ -49,7 +49,7 @@ type HardwareEventSpec struct {
 type HardwareEventStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	
+
 	// LastSynced time of the custom resource
 	// +operator-sdk:csv:customresourcedefinitions:type=status,displayName="Last Synced"
 	LastSynced *metav1.Time `json:"lastSyncTimestamp,omitempty"`
