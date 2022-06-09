@@ -1,0 +1,5 @@
+packageName: hw-event-proxy-operator
+channels:
+- name: stable
+  currentCSV: hw-event-proxy-operator.v4.10.0
+defaultChannel: stable
