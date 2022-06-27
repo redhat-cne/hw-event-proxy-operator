@@ -5,7 +5,7 @@ spec:
   - name: baremetal-hardware-event-proxy
     from:
       kind: DockerImage
-      name: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.10.0
+      name: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.10
   - name: baremetal-hardware-event-proxy-operator
     from:
       kind: DockerImage
@@ -13,4 +13,4 @@ spec:
   - name: kube-rbac-proxy
     from:
       kind: DockerImage
-      name: quay.io/openshift/origin-kube-rbac-proxy:4.10.0
+      name: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
