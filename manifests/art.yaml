@@ -1,13 +1,13 @@
 updates:
-  - file: "stable/hw-event-proxy-operator.clusterserviceversion.yaml" # relative to this file
+  - file: "stable/bare-metal-event-relay.clusterserviceversion.yaml" # relative to this file
     update_list:
-    - search: "hw-event-proxy-operator.v{MAJOR}.{MINOR}.0"
-      replace: "hw-event-proxy-operator.{FULL_VER}"
+    - search: "bare-metal-event-relay.v{MAJOR}.{MINOR}.0"
+      replace: "bare-metal-event-relay.{FULL_VER}"
     - search: "version: {MAJOR}.{MINOR}.0"
       replace: "version: {FULL_VER}"
     - search: 'olm.skipRange: ">=4.6.0 <{MAJOR}.{MINOR}.0"'
       replace: 'olm.skipRange: ">=4.6.0 <{FULL_VER}"'
-  - file: "hw-event-proxy-operator.package.yaml"
+  - file: "bare-metal-event-relay.package.yaml"
     update_list:
-    - search: "currentCSV: hw-event-proxy-operator.v{MAJOR}.{MINOR}.0"
-      replace: "currentCSV: hw-event-proxy-operator.{FULL_VER}"
+    - search: "currentCSV: bare-metal-event-relay.v{MAJOR}.{MINOR}.0"
+      replace: "currentCSV: bare-metal-event-relay.{FULL_VER}"

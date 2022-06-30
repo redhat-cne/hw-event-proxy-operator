@@ -1,0 +1,5 @@
+packageName: bare-metal-event-relay
+channels:
+- name: stable
+  currentCSV: bare-metal-event-relay.v4.10.0
+defaultChannel: stable
