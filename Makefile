@@ -178,6 +178,7 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
+	hack/sync-manifests-for-art-build.sh
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
