@@ -1,12 +1,12 @@
 # Build the manager binary
-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.17-openshift-4.11 AS builder
+FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.18-openshift-4.12 AS builder
 WORKDIR /go/src/github.com/redhat-cne/hw-event-proxy-operator
 COPY . .
 ENV GO111MODULE=off
 RUN make
 # Build
 
-FROM registry.ci.openshift.org/ocp/4.11:base
+FROM registry.ci.openshift.org/ocp/4.12:base
 WORKDIR /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/build/_output/bin/hw-event-proxy-operator /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bindata /bindata

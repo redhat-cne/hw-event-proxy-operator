@@ -16,3 +16,23 @@ spec:
   selector:
     app: hw-event-proxy
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/scrape: "false"
+    service.beta.openshift.io/serving-cert-secret-name: hw-event-proxy-secret
+  labels:
+    app: hw-event-proxy
+  name:  hw-event-publisher-service
+  namespace: {{ .Namespace }}
+spec:
+  selector:
+    app: hw-event-proxy
+  clusterIP: None
+  ports:
+    - name: publisher-port
+      port: 9043
+  sessionAffinity: None
+  type: ClusterIP
