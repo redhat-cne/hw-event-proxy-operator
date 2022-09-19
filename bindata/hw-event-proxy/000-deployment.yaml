@@ -17,6 +17,8 @@ spec:
       labels:
         app: hw-event-proxy
     spec:
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
       serviceAccountName: hw-event-proxy-sa
       containers:
         - name: hw-event-proxy
@@ -59,7 +61,7 @@ spec:
                   key: hostaddr
             - name: LOG_LEVEL
               value: "{{ .LogLevel }}"
-        - name: cloud-event-proxy
+        - name: cloud-event-sidecar
           image: {{ .SideCar }}
           imagePullPolicy: IfNotPresent
           args:
@@ -73,8 +75,6 @@ spec:
           ports:
             - name: metrics-port
               containerPort: 9091
-            - name: api-port
-              containerPort: 9085
           env:
             - name: NODE_NAME
               valueFrom:

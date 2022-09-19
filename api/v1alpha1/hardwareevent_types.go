@@ -28,7 +28,9 @@ type HardwareEventSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// TransportHost is amq host url  e.g.amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+	// TransportHost format is <protocol>://<transport-service>.<namespace>.svc.cluster.local:<transport-port>"
+	// Example HTTP transport: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+	// Example AMQP transport: "amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Transport Host",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	TransportHost string `json:"transportHost"`
 	// +kubebuilder:validation:Optional

@@ -4,7 +4,8 @@
 ```
 make build
 make bin
-make image
+podman build . -f Dockerfile.dev -t quay.io/redhat-cne/hw-event-proxy-operator:latest
+podman push quay.io/redhat-cne/hw-event-proxy-operator:latest
 ```
 
 ## Update manifests and bundle
@@ -17,23 +18,31 @@ make bundle
 ## Deploy hw-event-proxy using operator
 ```
 # under hw-event-proxy-operator repo:
-export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:latest
+export IMG=quay.io/redhat-cne/hw-event-proxy-operator:latest
 make deploy
 
 # check operator logs:
-oc -n hw-event-proxy-operator-system logs -f hw-event-proxy-operator-controller-manager-fd95dfff4-7cngx -c manager
+oc -n openshift-bare-metal-events logs -f hw-event-proxy-operator-controller-manager-fd95dfff4-7cngx -c manager
 
-# find the worker node name
-oc get nodes
-
-# under hw-event-proxy repo:
-oc label --overwrite node <name of worker node> app=local
+# deploy amqp if AMQP transport is used. Under hw-event-proxy repo:
 make deploy-amq
 
-oc apply -f tests/e2e/manifest/secret.yaml -n hw-event-proxy-operator-system
+# Create redfish secret
+# replace the following with real Redfish credentials and BMC ip address
+export REDFISH_USERNAME=<user>
+export REDFISH_PASSWORD=<password>
+export REDFISH_HOSTADDR=<ip address>
+oc -n openshift-bare-metal-events create secret generic redfish-basic-auth \
+--from-literal=username=$REDFISH_USERNAME \
+--from-literal=password=$REDFISH_PASSWORD \
+--from-literal=hostaddr="$REDFISH_HOSTADDR"
 
-# deploy hw-event-proxy. Update the amqp host address
-#   transportHost: "amqp://router.router.svc.cluster.local"
-oc apply -f config/samples/event_v1alpha1_hardwareevent.yaml -n hw-event-proxy-operator-system
+# deploy hw-event-proxy. Update the transportHost before apply.
+oc apply -f config/samples/event_v1alpha1_hardwareevent.yaml -n openshift-bare-metal-events
+```
 
+## Deploy example consumer
+under [hw-event-proxy](https://github.com/redhat-cne/hw-event-proxy) repo:
+```
+make deploy-consumer
 ```

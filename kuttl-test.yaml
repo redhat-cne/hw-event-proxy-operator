@@ -9,4 +9,4 @@ crdDir: config/crd/bases/
 # before deciding to error.
 timeout: 350
 parallel: 1
-namespace: hw-event-proxy-operator-system
+namespace: openshift-bare-metal-events

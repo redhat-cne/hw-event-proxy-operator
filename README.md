@@ -1,49 +1,44 @@
-# Hardware Event Proxy Operator
-## Table of Contents
+# Bare Metal Event Relay Operator
 
-- [HW-Event-Proxy Operator](#hw-event-proxy-operator)
-- [HardwareEvent](#hardwareevent)
-- [Quick Start](#quick-start)
+> **_NOTE:_** `Bare Metal Event Relay` was renamed from `Hardware Event Proxy`.
 
-## HW-Event-Proxy Operator
-hw-event-proxy operator, runs in single namespace, manages baremetal hardware event framework.
-It offers `HardwareEvent` CRDs and deploys `hw-event-proxy` container along with `cloud-event-proxy` cloud event framework.
+The Bare Metal Event Relay Operator, runs in a single namespace, manages bare metal hardware event framework.
+It offers `HardwareEvent` CRDs and deploys [Bare Metal Event Relay](https://github.com/redhat-cne/hw-event-proxy) container along with [Cloud Event Proxy](https://github.com/redhat-cne/cloud-event-proxy) framework.
 
+ [![go-doc](https://godoc.org/github.com/redhat-cne/hw-event-proxy-operator?status.svg)](https://godoc.org/github.com/redhat-cne/hw-event-proxy-operator)
+ [![Go Report Card](https://goreportcard.com/badge/github.com/redhat-cne/hw-event-proxy-operator)](https://goreportcard.com/report/github.com/redhat-cne/hw-event-proxy-operator)
+ [![LICENSE](https://img.shields.io/github/license/redhat-cne/hw-event-proxy-operator.svg)](https://github.com/redhat-cne/hw-event-proxy-operator/blob/main/LICENSE)
 
 ## HardwareEvent
-To start using Hardware event proxy, install the operator and then create the following HardwareEvent:
-You can only create one instance of HardwareEvent in this release.
+To start using Bare Metal Event Relay, install the operator and then create the following HardwareEvent CR.
+You can only create one instance of HardwareEvent in this release. Examples:
+
+### With HTTP Transport
 ```
 apiVersion: "event.redhat-cne.org/v1alpha1"
 kind: "HardwareEvent"
 metadata:
   name: "hardware-event"
 spec:
- nodeSelector: {}
- transportHost: "amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+  nodeSelector: {}
+  transportHost: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
 ```
-The amqp host specified is needed to deliver the events at transport layer using AMQP protocol.
+Here the transport is set to `hw-event-publisher-service` service in the `openshift-bare-metal-events` namespace.
 
-This operator needs a secret to be created to access Redfish
-Message Registry.
-The secret name and spec the operand expects are under the same namespace
-the operand is deployed on. For example:
+### With AMQP Transport
 ```
-apiVersion: v1
-kind: Secret
+apiVersion: "event.redhat-cne.org/v1alpha1"
+kind: "HardwareEvent"
 metadata:
-  name: redfish-basic-auth
-type: Opaque
-data:
-  username: cm9vdA==
-  password: Y2Fsdmlu
-stringData:
-  # BMC host DNS or IP address
-  hostaddr: 10.46.61.142
+  name: "hardware-event"
+spec:
+  nodeSelector: {}
+  transportHost: "amqp://<amq-router-service-name>.<amq-namespace>.svc.cluster.local"
 ```
+The AMQP service `<amq-router-service-name>` should be available in `<amq-namespace>` namespace prior to deploying HardwareEvent.
 
-Below is an example of updating `nodeSelector` to select a specific nodes:
-
+### Select Node
+Below is an example of updating `nodeSelector` to select a specific node:
 ```
 apiVersion: "event.redhat-cne.org/v1alpha1"
 kind: "HardwareEvent"
@@ -51,15 +46,31 @@ metadata:
   name: "hardware-event"
 spec:
   nodeSelector:
-    node-role.kubernetes.io/hw-event: ""
-  transportHost: "amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
+    node-role.kubernetes.io/worker: ""
+  transportHost: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+```
+
+### Create Secret for Redfish Authentication
+This operator needs a secret to be created to access Redfish Message Registry.
+The secret name and spec the operand expects are under the same namespace the operand is deployed on. For example:
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redfish-basic-auth
+type: Opaque
+stringData:
+  username: <bmc_username>
+  password: <bmc_password>
+  # BMC host DNS or IP address
+  hostaddr: <bmc_host_ip_address>
 ```
 
 ## Quick Start
 
-To install hw-event-proxy Operator:
+To install the Bare Metal Event Relay Operator:
 ```
-export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.11
+export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.12
 $ make deploy
 ```
 
