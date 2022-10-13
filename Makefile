@@ -149,10 +149,10 @@ envtest: ## Download envtest-setup locally if necessary.
 
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
 OPERATOR_SDK_VERSION = $(shell $(OPERATOR_SDK) version 2>/dev/null | sed 's/^operator-sdk version: "\([^"]*\).*/\1/')
-OPERATOR_SDK_VERSION_REQ = v1.16.0-ocp
+OPERATOR_SDK_VERSION_REQ = v1.22.0-ocp
 operator-sdk: ## Download operator-sdk locally if necessary.
 ifneq ($(OPERATOR_SDK_VERSION_REQ),$(OPERATOR_SDK_VERSION))
-	curl https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/operator-sdk/4.10.17/operator-sdk-v1.16.0-ocp-linux-x86_64.tar.gz | tar -xz -C bin/
+	curl https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/operator-sdk/4.11.6/operator-sdk-v1.22.0-ocp-linux-x86_64.tar.gz | tar -xz -C bin/
 endif
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
