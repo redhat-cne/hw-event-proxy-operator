@@ -12,6 +12,6 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator
-  newTag: 4.12.0
+  newTag: 4.13.0
 patchesStrategicMerge:
 - env.yaml

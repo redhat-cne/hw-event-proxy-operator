@@ -70,7 +70,7 @@ stringData:
 
 To install the Bare Metal Event Relay Operator:
 ```
-export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.12
+export IMG=quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.13
 $ make deploy
 ```
 
