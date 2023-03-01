@@ -6,7 +6,7 @@ ENV GO111MODULE=off
 RUN make
 # Build
 
-FROM registry.ci.openshift.org/ocp/4.12:base
+FROM registry.ci.openshift.org/ocp/4.13:base
 WORKDIR /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/build/_output/bin/hw-event-proxy-operator /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bindata /bindata
