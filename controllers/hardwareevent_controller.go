@@ -65,6 +65,7 @@ type HardwareEventReconciler struct {
 //+kubebuilder:rbac:groups=authorization.k8s.io,resources=subjectaccessreviews,verbs=create;delete;get;watch;list;update
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=create;delete;get;watch;list;update
 //+kubebuilder:rbac:groups=authentication.k8s.io,resources=tokenreviews,verbs=create;delete;get;watch;list;update
+//+kubebuilder:rbac:groups=*,resources=persistentvolumeclaims,verbs=get;list;watch;create;delete;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
