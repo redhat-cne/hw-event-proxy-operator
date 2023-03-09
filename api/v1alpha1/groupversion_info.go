@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the event v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=event.redhat-cne.org
+// +kubebuilder:object:generate=true
+// +groupName=event.redhat-cne.org
 package v1alpha1
 
 import (
