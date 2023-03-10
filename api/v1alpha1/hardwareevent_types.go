@@ -63,7 +63,7 @@ type HardwareEventStatus struct {
 //+kubebuilder:subresource:status
 
 // HardwareEvent is the Schema for the hardwareevents API
-//+operator-sdk:csv:customresourcedefinitions:displayName="Hardware Event",resources={{Namespace, v1},{Deployment,apps/v1}}
+// +operator-sdk:csv:customresourcedefinitions:displayName="Hardware Event",resources={{Namespace, v1},{Deployment,apps/v1}}
 type HardwareEvent struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
