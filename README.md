@@ -22,8 +22,15 @@ metadata:
 spec:
   nodeSelector: {}
   transportHost: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+  storageType: "example-storage-class"
 ```
 Here the transport is set to `hw-event-publisher-service` service in the `openshift-bare-metal-events` namespace.
+
+The `storageType` is for HTTP transport only. HTTP transport requires persistent storage for storing subscription data. The `storageType` must be set to the name of StorageClass providing the persist storage.
+
+If `transportHost` is missing or empty, the default transportHost `"http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"` is used. In this case a valid `storageType` is still required.
+
+A special storageType `emptyDir` is used for developers only. It provides ephemeral storage for HTTP transport and is used for developer testings.
 
 ### With AMQP Transport
 ```
@@ -52,7 +59,15 @@ spec:
 
 ### Create Secret for Redfish Authentication
 This operator needs a secret to be created to access Redfish Message Registry.
-The secret name and spec the operand expects are under the same namespace the operand is deployed on. For example:
+
+```
+oc -n openshift-bare-metal-events create secret generic redfish-basic-auth \
+  --from-literal=username=${BMC_USER} \
+  --from-literal=password=${BMC_PASSWORD} \
+  --from-literal=hostaddr=${BMC_HOST}
+```
+
+The secret is created under the same namespace as the operator. For example:
 ```
 apiVersion: v1
 kind: Secret

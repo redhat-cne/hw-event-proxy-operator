@@ -21,8 +21,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -52,6 +54,13 @@ type HardwareEventReconciler struct {
 	Log    logr.Logger
 }
 
+const (
+	AmqScheme            = "amqp"
+	DefaultTransportHost = "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+	DefaultStorageType   = "emptyDir"
+	PVCNamePrefix        = "cloud-event-proxy-store"
+)
+
 //+kubebuilder:rbac:groups=event.redhat-cne.org,resources=hardwareevents,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=secrets;endpoints;pods,verbs=get;list;watch
 //+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
@@ -65,7 +74,8 @@ type HardwareEventReconciler struct {
 //+kubebuilder:rbac:groups=authorization.k8s.io,resources=subjectaccessreviews,verbs=create;delete;get;watch;list;update
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=create;delete;get;watch;list;update
 //+kubebuilder:rbac:groups=authentication.k8s.io,resources=tokenreviews,verbs=create;delete;get;watch;list;update
-//+kubebuilder:rbac:groups=*,resources=persistentvolumeclaims,verbs=get;list;watch;create;delete;update;patch
+//+kubebuilder:rbac:groups=core,resources=persistentvolumeclaims,verbs=get;list;watch;create;update;delete
+//+kubebuilder:rbac:groups=storage.k8s.io,resources=storageclasses,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -117,7 +127,7 @@ func (r *HardwareEventReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	return ctrl.Result{}, nil
 }
 
-// syncPtpConfig synchronizes PtpConfig CR
+// syncHwEventProxy synchronizes HardwareEvent CR
 func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespace string, instance *hwEventV1alpha1.HardwareEvent) error {
 	var err error
 
@@ -138,16 +148,35 @@ func (r *HardwareEventReconciler) syncHwEventProxy(ctx context.Context, namespac
 	data.Data["ReleaseVersion"] = os.Getenv("RELEASE_VERSION")
 	data.Data["KubeRbacProxy"] = os.Getenv("KUBE_RBAC_PROXY_IMAGE")
 	data.Data["SideCar"] = os.Getenv("CLOUD_EVENT_PROXY_IMAGE")
-	data.Data["EventTransportHost"] = instance.Spec.TransportHost
+
+	if instance.Spec.TransportHost == "" {
+		data.Data["EventTransportHost"] = DefaultTransportHost
+	} else {
+		data.Data["EventTransportHost"] = instance.Spec.TransportHost
+	}
+
+	// storageType is already checked in webhook
+	data.Data["StorageType"] = instance.Spec.StorageType
 
 	objs, err = render.RenderDir(filepath.Join(names.ManifestDir, "hw-event-proxy"), &data)
 	if err != nil {
 		return fmt.Errorf("failed to render hardware event proxy deployment manifest: %v", err)
 	}
 
+	err = r.cleanupPvc(ctx, namespace, fmt.Sprintf("%s", data.Data["StorageType"]))
+	if err != nil {
+		return err
+	}
+
 	for _, obj := range objs {
 		if obj, err = r.setNodeSelector(instance, obj); err != nil {
 			return fmt.Errorf("failed to apply %s object %v with node selector err: %v", obj.GetName(), obj, err)
+		}
+		if obj.GetKind() == "PersistentVolumeClaim" {
+			obj, err = r.syncPvc(ctx, namespace, obj)
+			if err != nil {
+				return err
+			}
 		}
 		if err = controllerutil.SetControllerReference(instance, obj, r.Scheme); err != nil {
 			return fmt.Errorf("failed to set owner reference: %v", err)
@@ -183,7 +212,7 @@ func (r *HardwareEventReconciler) getSecret(secretName string, secretNamespace s
 	return secret, secretHash, nil
 }
 
-// setNodeSelector synchronizes  deployment
+// setNodeSelector synchronizes deployment
 func (r *HardwareEventReconciler) setNodeSelector(
 	defaultCfg *hwEventV1alpha1.HardwareEvent,
 	obj *uns.Unstructured,
@@ -203,6 +232,81 @@ func (r *HardwareEventReconciler) setNodeSelector(
 		}
 	}
 	return obj, nil
+}
+
+// syncPvc update PersistentVolumeClaim
+func (r *HardwareEventReconciler) syncPvc(ctx context.Context, namespace string, obj *uns.Unstructured) (*uns.Unstructured, error) {
+	var err error
+	scheme := kscheme.Scheme
+	pvc := &corev1.PersistentVolumeClaim{}
+	err = scheme.Convert(obj, pvc, nil)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert obj to corev1.PersistentVolumeClaim: %v", err)
+	}
+
+	// update the VolumeName of PVC when the PVC is bound to a PV
+	if pvcDeployed := r.getPvc(obj.GetName(), namespace); pvcDeployed != nil {
+		if pvcDeployed.Spec.VolumeName != pvc.Spec.VolumeName && pvc.Spec.VolumeName == "" {
+			log.Printf("pvc %s is Bound, updating VolumeName to %s", obj.GetName(), pvcDeployed.Spec.VolumeName)
+			pvc.Spec.VolumeName = pvcDeployed.Spec.VolumeName
+		}
+	}
+
+	err = scheme.Convert(pvc, obj, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert corev1.PersistentVolumeClaim to obj: %v", err)
+	}
+
+	return obj, nil
+}
+
+// cleanupPvc clean up obsolete PVCs not mounted to current hw-event-proxy pod
+func (r *HardwareEventReconciler) cleanupPvc(ctx context.Context, namespace string, storageType string) error {
+	var err error
+	pvcList := &corev1.PersistentVolumeClaimList{}
+	opts := []client.ListOption{
+		client.InNamespace(namespace),
+	}
+	err = r.List(context.TODO(), pvcList, opts...)
+	if err != nil {
+		return err
+	}
+
+	pvcName := fmt.Sprintf("%s-%s", PVCNamePrefix, storageType)
+
+	for _, p := range pvcList.Items {
+		if strings.HasPrefix(p.ObjectMeta.Name, PVCNamePrefix) {
+			if p.ObjectMeta.Name != pvcName || storageType == DefaultStorageType {
+				if err := r.Client.Delete(ctx, &p); err != nil {
+					log.Printf("fail to delete obsolete pvc %s err: %v", p.ObjectMeta.Name, err)
+				} else {
+					log.Printf("garbage collection: successfully deleted obsolete pvc %s", p.ObjectMeta.Name)
+				}
+			}
+		}
+
+	}
+	return nil
+}
+
+func (r *HardwareEventReconciler) getPvc(pvcName string, namespace string) *corev1.PersistentVolumeClaim {
+
+	pvcList := &corev1.PersistentVolumeClaimList{}
+	opts := []client.ListOption{
+		client.InNamespace(namespace),
+	}
+	err := r.List(context.TODO(), pvcList, opts...)
+	if err != nil {
+		return nil
+	}
+	for _, p := range pvcList.Items {
+		if p.ObjectMeta.Name == pvcName {
+			return &p
+		}
+
+	}
+	return nil
 }
 
 // ObjectHash creates a deep object hash and return it as a safe encoded string

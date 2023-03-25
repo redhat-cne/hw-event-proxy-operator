@@ -14,6 +14,7 @@ metadata:
             "nodeSelector": {
               "node-role.kubernetes.io/worker": ""
             },
+            "storageType": "emptyDir",
             "transportHost": "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
           }
         }
@@ -58,6 +59,12 @@ spec:
         - urn:alm:descriptor:com.tectonic.ui:text
       - displayName: Node Selector
         path: nodeSelector
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - description: StorageType is the name of StorageClass providing persist storage
+          used by HTTP transport to store subscription data
+        displayName: Storage Type
+        path: storageType
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
       - description: 'TransportHost format is <protocol>://<transport-service>.<namespace>.svc.cluster.local:<transport-port>"
@@ -115,18 +122,6 @@ spec:
         - apiGroups:
           - '*'
           resources:
-          - persistentvolumeclaims
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - patch
-          - update
-          - watch
-        - apiGroups:
-          - '*'
-          resources:
           - services
           verbs:
           - create
@@ -178,6 +173,17 @@ spec:
           verbs:
           - get
           - list
+          - watch
+        - apiGroups:
+          - ""
+          resources:
+          - persistentvolumeclaims
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - update
           - watch
         - apiGroups:
           - ""
@@ -253,6 +259,14 @@ spec:
           - patch
           - update
           - watch
+        - apiGroups:
+          - storage.k8s.io
+          resources:
+          - storageclasses
+          verbs:
+          - get
+          - list
+          - watch
         serviceAccountName: hw-event-proxy-operator-controller-manager
       deployments:
       - label:
@@ -306,7 +320,7 @@ spec:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
                 image: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.12.0
-                imagePullPolicy: Always
+                imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
                     path: /healthz
