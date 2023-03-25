@@ -15,6 +15,7 @@ metadata:
               "node-role.kubernetes.io/worker": ""
             },
             "transportHost": "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+            "storageType": "example-storage-class"
           }
         }
       ]
@@ -56,6 +57,12 @@ spec:
         - urn:alm:descriptor:com.tectonic.ui:text
       - displayName: Node Selector
         path: nodeSelector
+        x-descriptors:
+        - urn:alm:descriptor:com.tectonic.ui:text
+      - description: StorageType is the name of StorageClass providing persist storage
+          used by HTTP transport to store subscription data
+        displayName: Storage Type
+        path: storageType
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:text
       - description: 'TransportHost format is <protocol>://<transport-service>.<namespace>.svc.cluster.local:<transport-port>"

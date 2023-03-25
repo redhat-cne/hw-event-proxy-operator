@@ -31,9 +31,11 @@ spec:
         - /hw-event-proxy-operator
         args:
         - --leader-elect
+        - --logtostderr
+        - --stderrthreshold=INFO
         image: controller
         name: manager
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
