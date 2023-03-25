@@ -32,7 +32,7 @@ type HardwareEventSpec struct {
 	// Example HTTP transport: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
 	// Example AMQP transport: "amqp://amq-router-service-name.amq-namespace.svc.cluster.local"
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Transport Host",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
-	TransportHost string `json:"transportHost"`
+	TransportHost string `json:"transportHost,omitempty"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default=debug
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Log Level",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
@@ -45,6 +45,10 @@ type HardwareEventSpec struct {
 	// +kubebuilder:validation:Required
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Node Selector",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
 	NodeSelector map[string]string `json:"nodeSelector"`
+
+	// StorageType is the name of StorageClass providing persist storage used by HTTP transport to store subscription data
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Storage Type",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:text"}
+	StorageType string `json:"storageType,omitempty"`
 }
 
 // HardwareEventStatus defines the observed state of HardwareEvent
