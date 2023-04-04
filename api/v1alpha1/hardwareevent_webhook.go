@@ -18,7 +18,11 @@ package v1alpha1
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/url"
+
+	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,8 +46,14 @@ func (r *HardwareEvent) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
 // +kubebuilder:webhook:path=/validate-event-redhat-cne-org-v1alpha1-hardwareevent,mutating=false,failurePolicy=fail,sideEffects=None,groups=event.redhat-cne.org,resources=hardwareevents,verbs=create;update,versions=v1alpha1,name=vhardwareevent.kb.io,admissionReviewVersions=v1
+
+const (
+	AmqScheme            = "amqp"
+	DefaultTransportHost = "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+	// storageTypeEmptyDir is used for developer tests to map pubsubstore volume to emptyDir
+	storageTypeEmptyDir = "emptyDir"
+)
 
 var _ webhook.Validator = &HardwareEvent{}
 
@@ -62,26 +72,53 @@ func (r *HardwareEvent) ValidateCreate() error {
 		return fmt.Errorf("only one Hardware Event instance is supported at this time")
 	}
 
-	if r.Spec.TransportHost == "" {
-		return fmt.Errorf("transport URL is required field in Hardware instance spec")
-	}
-	return nil
+	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *HardwareEvent) ValidateUpdate(old runtime.Object) error {
 	hardwareeventlog.Info("validate update", "name", r.Name)
-
-	if r.Spec.TransportHost == "" {
-		return fmt.Errorf("transport URL is required field in Hardware instance spec")
-	}
-	return nil
+	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *HardwareEvent) ValidateDelete() error {
 	hardwareeventlog.Info("validate delete", "name", r.Name)
-
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
+}
+
+func (r *HardwareEvent) validate() error {
+
+	eventConfig := r.Spec
+	transportUrl, err := url.Parse(eventConfig.TransportHost)
+	if eventConfig.TransportHost == "" || err != nil {
+		hardwareeventlog.Info("transportHost is not valid, proceed as", "transportHost", DefaultTransportHost)
+	}
+
+	if eventConfig.TransportHost == "" || transportUrl.Scheme != AmqScheme {
+		if eventConfig.StorageType == "" {
+			return errors.New("for HTTP transport, storageType must be set to the name of StorageClass providing persist storage")
+		}
+		if eventConfig.StorageType != storageTypeEmptyDir && !r.checkStorageClass(eventConfig.StorageType) {
+			return errors.New("storageType is set to StorageClass " + eventConfig.StorageType + " which does not exist")
+		}
+	}
+	return nil
+}
+
+func (r *HardwareEvent) checkStorageClass(scName string) bool {
+
+	scList := &storagev1.StorageClassList{}
+	opts := []client.ListOption{}
+	err := webhookClient.List(context.TODO(), scList, opts...)
+	if err != nil {
+		return false
+	}
+
+	for _, sc := range scList.Items {
+		if sc.Name == scName {
+			return true
+		}
+	}
+	return false
 }

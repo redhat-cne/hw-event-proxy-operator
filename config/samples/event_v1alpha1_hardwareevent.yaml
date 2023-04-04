@@ -6,3 +6,4 @@ spec:
   nodeSelector:
     node-role.kubernetes.io/worker: ""
   transportHost: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
+  storageType: emptyDir
