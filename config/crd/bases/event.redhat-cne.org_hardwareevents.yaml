@@ -45,6 +45,10 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
+              storageType:
+                description: StorageType is the name of StorageClass providing persist
+                  storage used by HTTP transport to store subscription data
+                type: string
               transportHost:
                 description: 'TransportHost format is <protocol>://<transport-service>.<namespace>.svc.cluster.local:<transport-port>"
                   Example HTTP transport: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
@@ -52,7 +56,6 @@ spec:
                 type: string
             required:
             - nodeSelector
-            - transportHost
             type: object
           status:
             description: HardwareEventStatus defines the observed state of HardwareEvent
