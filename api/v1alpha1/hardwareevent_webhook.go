@@ -97,7 +97,8 @@ func (r *HardwareEvent) validate() error {
 
 	if eventConfig.TransportHost == "" || transportUrl.Scheme != AmqScheme {
 		if eventConfig.StorageType == "" {
-			return errors.New("for HTTP transport, storageType must be set to the name of StorageClass providing persist storage")
+			// default to emptyDir to pass the check since cloud-event-proxy overwrites this to configMap for HTTP transport
+			eventConfig.StorageType = storageTypeEmptyDir
 		}
 		if eventConfig.StorageType != storageTypeEmptyDir && !r.checkStorageClass(eventConfig.StorageType) {
 			return errors.New("storageType is set to StorageClass " + eventConfig.StorageType + " which does not exist")
