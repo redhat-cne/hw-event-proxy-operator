@@ -22,15 +22,14 @@ metadata:
 spec:
   nodeSelector: {}
   transportHost: "http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"
-  storageType: "example-storage-class"
 ```
 Here the transport is set to `hw-event-publisher-service` service in the `openshift-bare-metal-events` namespace.
 
-The `storageType` is for HTTP transport only. HTTP transport requires persistent storage for storing subscription data. The `storageType` must be set to the name of StorageClass providing the persist storage.
+The `storageType` is for HTTP transport only. HTTP transport requires persistent storage for storing subscription data. The `storageType` when not specified is set to `emptyDir`.
+>  The `storageType` is no longer used and is overridden in cloud-event-proxy by configMap.
 
-If `transportHost` is missing or empty, the default transportHost `"http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"` is used. In this case a valid `storageType` is still required.
+If `transportHost` is missing or empty, the default transportHost `"http://hw-event-publisher-service.openshift-bare-metal-events.svc.cluster.local:9043"` is used. 
 
-A special storageType `emptyDir` is used for developers only. It provides ephemeral storage for HTTP transport and is used for developer testings.
 
 ### With AMQP Transport
 ```

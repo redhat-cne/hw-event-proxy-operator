@@ -167,23 +167,24 @@ spec:
         - apiGroups:
           - ""
           resources:
+          - configmaps
+          verbs:
+          - create
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - ""
+          resources:
           - endpoints
           - pods
           - secrets
           verbs:
           - get
           - list
-          - watch
-        - apiGroups:
-          - ""
-          resources:
-          - persistentvolumeclaims
-          verbs:
-          - create
-          - delete
-          - get
-          - list
-          - update
           - watch
         - apiGroups:
           - ""
@@ -258,14 +259,6 @@ spec:
           - list
           - patch
           - update
-          - watch
-        - apiGroups:
-          - storage.k8s.io
-          resources:
-          - storageclasses
-          verbs:
-          - get
-          - list
           - watch
         serviceAccountName: hw-event-proxy-operator-controller-manager
       deployments:
