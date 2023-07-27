@@ -80,6 +80,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: NAME_SPACE
+              value: "{{ .Namespace }}"
         - name: kube-rbac-proxy
           image: {{ .KubeRbacProxy }}
           imagePullPolicy: IfNotPresent
@@ -104,30 +106,7 @@ spec:
               readOnly: True
       volumes:
         - name: pubsubstore
-          {{ if or (eq .StorageType "emptyDir") (hasPrefix "amqp" .EventTransportHost) }}
           emptyDir: {}
-          {{ else }}
-          persistentVolumeClaim:
-            claimName: cloud-event-proxy-store-{{ .StorageType }}
-          {{ end }}
         - name: hw-event-proxy-certs
           secret:
             secretName: hw-event-proxy-secret
-# special storageType "emptyDir" is used for developer tests to map pubsubstore volume to emptyDir
-{{ if (ne .StorageType "emptyDir") }}
-{{ if not (hasPrefix "amqp" .EventTransportHost) }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: cloud-event-proxy-store-{{ .StorageType }}
-  namespace: "{{ .Namespace }}"
-spec:
-  storageClassName: {{ .StorageType }}
-  resources:
-    requests:
-      storage: 10Mi
-  accessModes:
-  - ReadWriteOnce
-{{ end }}
-{{ end }}
