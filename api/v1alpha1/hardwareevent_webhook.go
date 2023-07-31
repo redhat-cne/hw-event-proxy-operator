@@ -18,11 +18,9 @@ package v1alpha1
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 
-	storagev1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -90,35 +88,10 @@ func (r *HardwareEvent) ValidateDelete() error {
 func (r *HardwareEvent) validate() error {
 
 	eventConfig := r.Spec
-	transportUrl, err := url.Parse(eventConfig.TransportHost)
+	_, err := url.Parse(eventConfig.TransportHost)
 	if eventConfig.TransportHost == "" || err != nil {
 		hardwareeventlog.Info("transportHost is not valid, proceed as", "transportHost", DefaultTransportHost)
 	}
 
-	if eventConfig.TransportHost == "" || transportUrl.Scheme != AmqScheme {
-		if eventConfig.StorageType == "" {
-			return errors.New("for HTTP transport, storageType must be set to the name of StorageClass providing persist storage")
-		}
-		if eventConfig.StorageType != storageTypeEmptyDir && !r.checkStorageClass(eventConfig.StorageType) {
-			return errors.New("storageType is set to StorageClass " + eventConfig.StorageType + " which does not exist")
-		}
-	}
 	return nil
-}
-
-func (r *HardwareEvent) checkStorageClass(scName string) bool {
-
-	scList := &storagev1.StorageClassList{}
-	opts := []client.ListOption{}
-	err := webhookClient.List(context.TODO(), scList, opts...)
-	if err != nil {
-		return false
-	}
-
-	for _, sc := range scList.Items {
-		if sc.Name == scName {
-			return true
-		}
-	}
-	return false
 }
