@@ -22,14 +22,14 @@ metadata:
     capabilities: Basic Install
     categories: Monitoring
     certified: "false"
-    containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.13
+    containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.15
     createdAt: "2023-02-23"
     description: This software manages the lifecycle of the hw-event-proxy container.
-    olm.skipRange: ">=4.3.0-0 <4.13.0"
+    olm.skipRange: ">=4.3.0-0 <4.15.0"
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
     support: Red Hat
-  name: hw-event-proxy-operator.v0.0.0
+  name: hw-event-proxy-operator.v4.15.0
   namespace: openshift-bare-metal-events
 spec:
   apiservicedefinitions: {}
@@ -136,4 +136,5 @@ spec:
   maturity: alpha
   provider:
     name: Red Hat Inc
+  replaces: hw-event-proxy-operator.v4.14.0
   version: 0.0.0
