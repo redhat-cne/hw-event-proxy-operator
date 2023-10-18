@@ -303,11 +303,11 @@ spec:
                 - name: RELEASE_VERSION
                   value: v0.0.1
                 - name: HW_EVENT_PROXY_IMAGE
-                  value: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.13
+                  value: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.14
                 - name: KUBE_RBAC_PROXY_IMAGE
-                  value: quay.io/openshift/origin-kube-rbac-proxy:4.13
+                  value: quay.io/openshift/origin-kube-rbac-proxy:4.14
                 - name: CLOUD_EVENT_PROXY_IMAGE
-                  value: quay.io/openshift/origin-cloud-event-proxy:4.13
+                  value: quay.io/openshift/origin-cloud-event-proxy:4.14
                 - name: WATCH_NAMESPACE
                   valueFrom:
                     fieldRef:
