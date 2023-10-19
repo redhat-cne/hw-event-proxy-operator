@@ -1,12 +1,12 @@
 # Used by quay.io to trigger developer builds
-FROM quay.io/redhat-cne/openshift-origin-release:golang-1.19-openshift-4.14 AS builder
+FROM quay.io/redhat-cne/openshift-origin-release:rhel-8-golang-1.20-openshift-4.15 AS builder
 WORKDIR /go/src/github.com/redhat-cne/hw-event-proxy-operator
 COPY . .
 ENV GO111MODULE=off
 RUN make
 # Build
 
-FROM quay.io/redhat-cne/openshift-origin-release:base-4.14
+FROM quay.io/redhat-cne/openshift-origin-release:base-4.15
 WORKDIR /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/build/_output/bin/hw-event-proxy-operator /
 COPY --from=builder /go/src/github.com/redhat-cne/hw-event-proxy-operator/bindata /bindata

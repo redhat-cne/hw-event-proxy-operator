@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
 // log is for logging in this package.
@@ -56,7 +57,7 @@ const (
 var _ webhook.Validator = &HardwareEvent{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (r *HardwareEvent) ValidateCreate() error {
+func (r *HardwareEvent) ValidateCreate() (admission.Warnings, error) {
 	hardwareeventlog.Info("validate create", "name", r.Name)
 	hwEventList := &HardwareEventList{}
 	listOpts := []client.ListOption{
@@ -64,25 +65,25 @@ func (r *HardwareEvent) ValidateCreate() error {
 	}
 	err := webhookClient.List(context.TODO(), hwEventList, listOpts...)
 	if err != nil {
-		return err
+		return admission.Warnings{}, err
 	}
 	if len(hwEventList.Items) >= 1 {
-		return fmt.Errorf("only one Hardware Event instance is supported at this time")
+		return admission.Warnings{}, fmt.Errorf("only one Hardware Event instance is supported at this time")
 	}
 
-	return r.validate()
+	return admission.Warnings{}, r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (r *HardwareEvent) ValidateUpdate(old runtime.Object) error {
+func (r *HardwareEvent) ValidateUpdate(old runtime.Object) (admission.Warnings, error) {
 	hardwareeventlog.Info("validate update", "name", r.Name)
-	return r.validate()
+	return admission.Warnings{}, r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (r *HardwareEvent) ValidateDelete() error {
+func (r *HardwareEvent) ValidateDelete() (admission.Warnings, error) {
 	hardwareeventlog.Info("validate delete", "name", r.Name)
-	return nil
+	return admission.Warnings{}, nil
 }
 
 func (r *HardwareEvent) validate() error {
