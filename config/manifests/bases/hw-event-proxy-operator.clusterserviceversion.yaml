@@ -25,7 +25,18 @@ metadata:
     containerImage: quay.io/openshift/origin-baremetal-hardware-event-proxy:4.15
     createdAt: "2023-02-23"
     description: This software manages the lifecycle of the hw-event-proxy container.
+    features.operators.openshift.io/cnf: "false"
+    features.operators.openshift.io/cni: "false"
+    features.operators.openshift.io/csi: "false"
+    features.operators.openshift.io/disconnected: "true"
+    features.operators.openshift.io/fips-compliant: "false"
+    features.operators.openshift.io/proxy-aware: "false"
+    features.operators.openshift.io/tls-profiles: "false"
+    features.operators.openshift.io/token-auth-aws: "false"
+    features.operators.openshift.io/token-auth-azure: "false"
+    features.operators.openshift.io/token-auth-gcp: "false"
     olm.skipRange: ">=4.3.0-0 <4.15.0"
+    operators.openshift.io/infrastructure-features: '["disconnected"]'
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
     support: Red Hat
