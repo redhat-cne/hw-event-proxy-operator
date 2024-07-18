@@ -42,7 +42,7 @@ metadata:
     provider: Red Hat
     repository: https://github.com/openshift/hw-event-proxy
     support: Red Hat
-  name: hw-event-proxy-operator.v4.15.0
+  name: hw-event-proxy-operator.v4.17.0
   namespace: openshift-bare-metal-events
 spec:
   apiservicedefinitions: {}
@@ -291,19 +291,6 @@ spec:
             spec:
               containers:
               - args:
-                - --secure-listen-address=0.0.0.0:8443
-                - --upstream=http://127.0.0.1:8080/
-                - --logtostderr=true
-                - --v=10
-                - --http2-disable=true
-                image: quay.io/openshift/origin-kube-rbac-proxy:4.15
-                name: kube-rbac-proxy
-                ports:
-                - containerPort: 8443
-                  name: https
-                  protocol: TCP
-                resources: {}
-              - args:
                 - --health-probe-bind-address=:8081
                 - --metrics-bind-address=127.0.0.1:8080
                 - --leader-elect
@@ -324,7 +311,7 @@ spec:
                   valueFrom:
                     fieldRef:
                       fieldPath: metadata.annotations['olm.targetNamespaces']
-                image: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.15.0
+                image: quay.io/openshift/origin-baremetal-hardware-event-proxy-operator:4.17.0
                 imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
@@ -356,6 +343,19 @@ spec:
                 - mountPath: /tmp/k8s-webhook-server/serving-certs
                   name: cert
                   readOnly: true
+              - args:
+                - --secure-listen-address=0.0.0.0:8443
+                - --upstream=http://127.0.0.1:8080/
+                - --logtostderr=true
+                - --v=10
+                - --http2-disable=true
+                image: quay.io/openshift/origin-kube-rbac-proxy:4.15
+                name: kube-rbac-proxy
+                ports:
+                - containerPort: 8443
+                  name: https
+                  protocol: TCP
+                resources: {}
               securityContext:
                 runAsNonRoot: true
               serviceAccountName: hw-event-proxy-operator-controller-manager
@@ -420,7 +420,7 @@ spec:
   provider:
     name: Red Hat Inc
   replaces: hw-event-proxy-operator.v4.14.0
-  version: 4.15.0
+  version: 4.17.0
   webhookdefinitions:
   - admissionReviewVersions:
     - v1

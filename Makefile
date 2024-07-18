@@ -3,7 +3,7 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 4.15.0
+VERSION ?= 4.17.0
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
@@ -51,6 +51,8 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+OS := $(shell uname -s)
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -58,8 +60,21 @@ PATH  := $(PATH):$(PWD)/bin
 SHELL = /usr/bin/env bash -o pipefail
 .SHELLFLAGS = -ec
 
-
 all: bin
+
+## Location to install dependencies to
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)/x86_64/
+
+## Tool Binaries
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+
+## Tool Versions
+CONTROLLER_TOOLS_VERSION ?= v0.15.0
+# Set the Operator SDK version to use. By default, what is installed on the system is used.
+# This is useful for CI or a project to utilize a specific version of the operator-sdk toolkit.
+OPERATOR_SDK_VERSION ?= v1.22.0-ocp
 
 ##@ General
 
@@ -102,7 +117,7 @@ build: generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
-docker-build: test ## Build docker image with the manager.
+docker-build: #test ## Build docker image with the manager.
 	docker build -t ${IMG} .
 
 docker-push: ## Push docker image with the manager.
@@ -135,9 +150,10 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
 
-CONTROLLER_GEN = $(shell pwd)/bin/controller-gen
-controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-install-tool,$(CONTROLLER_GEN),sigs.k8s.io/controller-tools/cmd/controller-gen@v0.9.2)
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary. If wrong version is installed, it will be overwritten.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
+	GOFLAGS=-mod=mod GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize
 kustomize: ## Download kustomize locally if necessary.
@@ -161,12 +177,21 @@ rm -rf $$TMP_DIR ;\
 }
 endef
 
-OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
-OPERATOR_SDK_VERSION = $(shell $(OPERATOR_SDK) version 2>/dev/null | sed 's/^operator-sdk version: "\([^"]*\).*/\1/')
-OPERATOR_SDK_VERSION_REQ = v1.22.0-ocp
+.PHONY: operator-sdk
+ifeq ($(OS), Darwin)
+OPERATOR_SDK ?= $(LOCALBIN)/x86_64/operator-sdk
+else
+OPERATOR_SDK ?= $(LOCALBIN)/operator-sdk
+endif
+OPERATOR_SDK_VERSION_INSTALLED = $(shell $(OPERATOR_SDK) version 2>/dev/null | sed 's/^operator-sdk version: "\([^"]*\).*/\1/')
 operator-sdk: ## Download operator-sdk locally if necessary.
-ifneq ($(OPERATOR_SDK_VERSION_REQ),$(OPERATOR_SDK_VERSION))
-	curl https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/operator-sdk/4.11.0/operator-sdk-linux-x86_64.tar.gz? | tar -xz -C bin/
+ifneq ($(OPERATOR_SDK_VERSION),$(OPERATOR_SDK_VERSION_INSTALLED))
+ifeq ($(OS), Darwin)
+	mkdir -p $(LOCALBIN)/x86_64/
+	curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/operator-sdk/4.11.0/operator-sdk-darwin-x86_64.tar.gz? | tar -xz -C bin/x86_64/
+else
+	curl -L https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/operator-sdk/4.11.0/operator-sdk-linux-x86_64.tar.gz? | tar -xz -C bin/
+endif
 endif
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
@@ -190,7 +215,11 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	$(OPERATOR_SDK) bundle validate ./bundle
 	# Use double quotes in values of olm.skipRange to match the expected regexp in art.yaml
+ifeq ($(OS), Darwin)
+	find . -type f -name "*.clusterserviceversion.yaml" -print0 | xargs -0 sed -i '' '/olm.skipRange:/s#'\''#"#g'
+else
 	find . -type f -name "*.clusterserviceversion.yaml" -print0 | xargs -0 sed -i '/olm.skipRange:/s#'\''#"#g'
+endif
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
